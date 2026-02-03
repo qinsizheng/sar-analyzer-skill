@@ -33,7 +33,8 @@ print(f"Total compounds: {len(df)}")
 print(f"Columns: {df.columns.tolist()}")
 
 # Filter valid SMILES
-df = df[df['Conversion_Success'] == True].copy()
+if 'Conversion_Success' in df.columns:
+    df = df[df['Conversion_Success'] == True].copy()
 df = df[df['SMILES'].notna()].copy()
 print(f"Compounds with valid SMILES: {len(df)}")
 

@@ -69,6 +69,21 @@ The skill expects a **CSV file** with the following columns:
 - Missing activity values are handled gracefully
 - SMILES must be valid and parseable by RDKit
 
+### Example Files:
+
+The skill includes example files in the `examples/` directory:
+
+- **`example_input.csv`**: Example input file demonstrating the expected CSV format with compound structures (SMILES), activity data (Ki values), and identifiers. Use this as a template for preparing your own compound libraries.
+
+- **`Example_SAR_Table.png`**: Example output showing a publication-quality SAR table for scaffold S1 with R-group decomposition, activity data, and color-coded highlighting. This demonstrates the expected output format when using the SAR table generation workflow.
+
+**Note**: The workflow using this skill should generate SAR table figures similar to `Example_SAR_Table.png`, with:
+- Core scaffold structure with labeled R-group positions
+- R-group substituents displayed as chemical structures
+- Activity data columns (Ki values, LLE, cLogP)
+- Color-coded highlighting for top compounds and excellent values
+- Summary statistics
+
 ---
 
 ## Complete SAR Analysis Workflow
@@ -237,7 +252,7 @@ python3 /home/ubuntu/skills/sar-analyzer/scripts/create_visualizations.py
 ### Step 6: SAR Table Generation
 
 **Scripts**: 
-- `create_s1_s7_tables.py`: Generate detailed SAR tables for specific scaffolds
+- `create_s1_s7_tables.py`: Generate detailed SAR tables for all major scaffolds (automatically detects all scaffolds)
 - `draw_all_scaffolds.py`: Generate scaffold structure images
 - `draw_all_unique_scaffolds.py`: Comprehensive scaffold visualization
 
@@ -245,7 +260,7 @@ python3 /home/ubuntu/skills/sar-analyzer/scripts/create_visualizations.py
 
 **Usage**:
 ```bash
-# Generate SAR tables for major scaffolds
+# Generate SAR tables for all major scaffolds (automatically processes all scaffolds in the dataset)
 python3 /home/ubuntu/skills/sar-analyzer/scripts/create_s1_s7_tables.py
 
 # Generate scaffold structure images
@@ -268,10 +283,10 @@ python3 /home/ubuntu/skills/sar-analyzer/scripts/draw_all_unique_scaffolds.py
 3. Creates scaffold comparison figures
 
 **Outputs**:
-- `SAR_Table_S1_Complete.png`, `SAR_Table_S2_Complete.png`, etc.
-- `S1_Core_Structure.png`, `S2_Core_Structure.png`, etc.
-- `all_scaffolds_batch*.png`
-- `top20_scaffolds_summary.png`
+- `SAR_Table_{scaffold_id}_Complete.png` for each major scaffold (e.g., `SAR_Table_S1_Complete.png`, `SAR_Table_S2_Complete.png`, etc.)
+- `{scaffold_id}_Core_Structure.png` for each scaffold (e.g., `S1_Core_Structure.png`, `S2_Core_Structure.png`, etc.)
+- `all_scaffolds_batch*.png` (from draw_all_scaffolds.py)
+- `top20_scaffolds_summary.png` (from draw_all_unique_scaffolds.py)
 
 ---
 
@@ -527,14 +542,20 @@ For detailed methodology and additional information, see:
 1. Run complete workflow (all 6 steps)
 2. Review `scaffold_statistics.csv` to identify best scaffolds
 3. Examine `rgroup_decomposition.csv` for R-group SAR trends
-4. Generate SAR tables for top 3 scaffolds
+4. Generate SAR tables for top scaffolds
 5. Identify compounds with LLE > 7.0 for further testing
 
 **Key Findings**:
 - Scaffold S6 (pyrazole-fused): Best LLE (6.35), excellent potency
 - Scaffold S3 (cyclohexyl): High LLE (6.37), consistent activity
-- R1 position: CS(=O)(=O)C or CCS(=O)(=O)NH optimal
-- Top compound: Example 22 (Sum Ki = 1.82 nM, LLE = 7.27)
+
+**Reference examples are located in the `examples/` folder**:
+- `examples/Example_SAR_Table.png` - Shows proper figure with scaffold structure, SAR table
+
+**Before generating output, review these examples to match**:
+- Formatting style
+- Section structure
+
 
 ---
 

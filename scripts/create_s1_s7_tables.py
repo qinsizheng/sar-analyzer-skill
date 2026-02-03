@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Create SAR Tables for S1 (most populated) and S7 (with all R-groups)
+Create SAR Tables for All Major Scaffolds
+Automatically detects and generates SAR tables for all scaffolds in the dataset
 """
 
 import pandas as pd
@@ -14,10 +15,12 @@ warnings.filterwarnings('ignore')
 print("Loading R-group decomposition data...")
 df_all = pd.read_csv('rgroup_decomposition.csv')
 
-# Process S1 and S7
-scaffolds = ['S1', 'S7']
+# Get all unique scaffolds
+all_scaffolds = df_all['Scaffold_ID'].unique()
+print(f"\nFound {len(all_scaffolds)} unique scaffolds: {', '.join(all_scaffolds)}")
 
-for scaffold_id in scaffolds:
+# Process each scaffold
+for scaffold_id in sorted(all_scaffolds):
     print(f"\n{'='*80}")
     print(f"Processing Scaffold {scaffold_id}")
     print(f"{'='*80}")
@@ -36,12 +39,8 @@ for scaffold_id in scaffolds:
     core_smiles = scaffold_data['Core'].iloc[0]
     print(f"Core SMILES: {core_smiles}")
     
-    # For S7, include ALL R-groups (R1-R9)
-    if scaffold_id == 'S7':
-        rgroup_cols = ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
-    else:
-        # For S1, get all R-group columns
-        rgroup_cols = [col for col in scaffold_data.columns if col.startswith('R')]
+    # Get all R-group columns for this scaffold
+    rgroup_cols = [col for col in scaffold_data.columns if col.startswith('R')]
     
     # Filter out completely empty R-groups
     rgroup_cols = [col for col in rgroup_cols if col in scaffold_data.columns and scaffold_data[col].notna().any()]
@@ -87,11 +86,14 @@ for scaffold_id in scaffolds:
         
         table_data.append(row_data)
     
-    # Create figure - larger for S1 due to many compounds
-    if scaffold_id == 'S1':
-        fig_height = max(20, 8 + len(scaffold_data) * 0.5)
+    # Create figure - adjust height based on number of compounds
+    n_compounds = len(scaffold_data)
+    if n_compounds > 40:
+        fig_height = max(20, 8 + n_compounds * 0.5)
+    elif n_compounds > 20:
+        fig_height = max(16, 8 + n_compounds * 0.6)
     else:
-        fig_height = max(16, 8 + len(scaffold_data) * 0.8)
+        fig_height = max(12, 8 + n_compounds * 0.8)
     
     fig = plt.figure(figsize=(28, fig_height))
     
@@ -114,11 +116,14 @@ for scaffold_id in scaffolds:
     columns.extend(['Ki BD1\n(nM)', 'Ki BD2\n(nM)', 'Sum Ki\n(nM)', 'cLogP', 'LLE'])
     
     # Calculate table position based on number of rows
-    if scaffold_id == 'S1':
+    if n_compounds > 40:
         table_height = 0.80
         table_y = 0.02
+    elif n_compounds > 20:
+        table_height = 0.75
+        table_y = 0.03
     else:
-        table_height = min(0.75, 0.15 + len(scaffold_data) * 0.05)
+        table_height = min(0.75, 0.15 + n_compounds * 0.05)
         table_y = 0.05
     
     ax_table = fig.add_axes([0.02, table_y, 0.96, table_height])
@@ -143,9 +148,12 @@ for scaffold_id in scaffolds:
                           colWidths=col_widths)
     
     table.auto_set_font_size(False)
-    if scaffold_id == 'S1':
+    if n_compounds > 40:
         table.set_fontsize(8)
         table.scale(1, 2.0)
+    elif n_compounds > 20:
+        table.set_fontsize(9)
+        table.scale(1, 2.5)
     else:
         table.set_fontsize(10)
         table.scale(1, 3.0)
@@ -229,10 +237,10 @@ for scaffold_id in scaffolds:
     plt.close()
 
 print("\n" + "="*80)
-print("S1 AND S7 SAR TABLES GENERATED SUCCESSFULLY!")
+print("SAR TABLES GENERATED SUCCESSFULLY FOR ALL SCAFFOLDS!")
 print("="*80)
-print("\nGenerated files:")
-print("  - SAR_Table_S1_Complete.png (55 compounds)")
-print("  - S1_Core_Structure.png")
-print("  - SAR_Table_S7_Complete.png (all R1-R9 groups)")
-print("  - S7_Core_Structure.png")
+print(f"\nGenerated SAR tables for {len(all_scaffolds)} scaffolds:")
+for scaffold_id in sorted(all_scaffolds):
+    scaffold_count = len(df_all[df_all['Scaffold_ID'] == scaffold_id])
+    print(f"  - SAR_Table_{scaffold_id}_Complete.png ({scaffold_count} compounds)")
+    print(f"  - {scaffold_id}_Core_Structure.png")
